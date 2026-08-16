@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>모두길 MODUGIL</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="./static/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div><h1>모두길</h1><p>경사 기반 이동성 경로 실험</p></div>
+      </div>
+
+      <section class="card">
+        <div class="step-row"><span class="step-number">1</span><div><strong>출발점과 도착점을 지도에서 클릭</strong><p id="click-guide">먼저 출발점을 클릭해 주세요.</p></div></div>
+        <div class="point-grid">
+          <div class="point-box"><span class="dot start-dot"></span><div><small>출발</small><strong id="start-text">미선택</strong></div></div>
+          <div class="point-box"><span class="dot end-dot"></span><div><small>도착</small><strong id="end-text">미선택</strong></div></div>
+        </div>
+        <button id="route-btn" class="primary-btn" disabled>4가지 경로 비교하기</button>
+        <button id="reset-btn" class="ghost-btn">초기화</button>
+      </section>
+
+      <section class="card">
+        <div class="section-title"><span class="step-number">2</span><strong>표시할 이동 모드</strong></div>
+        <div class="mode-list">
+          <label class="mode-chip"><input type="checkbox" value="walker" checked /><span>🚶 보행자</span></label>
+          <label class="mode-chip"><input type="checkbox" value="stroller" checked /><span>👶 유모차</span></label>
+          <label class="mode-chip"><input type="checkbox" value="manual_wc" checked /><span>♿ 수동휠체어</span></label>
+          <label class="mode-chip"><input type="checkbox" value="assist" checked /><span>⚡ Power Assist</span></label>
+        </div>
+      </section>
+
+      <section class="card results-card">
+        <div class="section-title"><span class="step-number">3</span><strong>경로 비교</strong></div>
+        <div id="status" class="status">아직 계산된 경로가 없습니다.</div>
+        <div id="results"></div>
+      </section>
+
+      <footer><p>※ 현재 V0.1은 경사 중심 prototype입니다. 실제 휠체어 접근 가능성을 보장하지 않습니다.</p></footer>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map"></div>
+      <div class="map-hint">지도 클릭 → 출발 → 도착</div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="./static/config.js"></script>
+  <script src="./static/app.js"></script>
+</body>
+</html>

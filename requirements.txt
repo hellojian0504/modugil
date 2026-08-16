@@ -1,0 +1,9 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+geopandas>=1.0
+pandas>=2.2
+numpy>=2.0
+scipy>=1.14
+shapely>=2.0
+pyproj>=3.6
+pyogrio>=0.9
