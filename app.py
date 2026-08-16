@@ -13,6 +13,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from pyproj import Transformer
 from scipy.spatial import cKDTree
+import json
+import time
+
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent
 PROCESSED = ROOT / 'data' / 'processed'
@@ -214,6 +219,121 @@ def startup_event():
 @app.get('/api/health')
 def health():
     return {'ready': engine.ready, 'error': engine.error, 'links': None if not engine.ready else len(engine.links), 'nodes': None if not engine.ready else len(engine.nodes)}
+
+# =========================================================
+# 장소 이름 검색
+# =========================================================
+
+_search_lock = threading.Lock()
+_last_search_time = 0.0
+
+
+@app.get('/api/search')
+def search_place(q: str):
+
+    global _last_search_time
+
+    q = q.strip()
+
+    if len(q) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail='검색어를 2글자 이상 입력해 주세요.'
+        )
+
+    # Nominatim public API의 요청 간격을 지키기 위해
+    # 검색 요청 사이를 최소 1초로 제한
+    with _search_lock:
+
+        elapsed = (
+            time.monotonic()
+            - _last_search_time
+        )
+
+        if elapsed < 1.0:
+            time.sleep(
+                1.0 - elapsed
+            )
+
+        params = {
+            'q': q,
+            'format': 'jsonv2',
+            'limit': 5,
+            'countrycodes': 'kr',
+            'accept-language': 'ko',
+            'addressdetails': 1,
+        }
+
+        url = (
+            'https://nominatim.openstreetmap.org/search?'
+            + urlencode(params)
+        )
+
+        request = Request(
+            url,
+            headers={
+                'User-Agent':
+                    'MODUGIL/0.1 '
+                    '(https://hellojian0504.github.io/modugil/)',
+
+                'Accept':
+                    'application/json',
+            }
+        )
+
+        try:
+
+            with urlopen(
+                request,
+                timeout=10
+            ) as response:
+
+                data = json.loads(
+                    response
+                    .read()
+                    .decode('utf-8')
+                )
+
+        except Exception as e:
+
+            raise HTTPException(
+                status_code=502,
+                detail=f'장소 검색 실패: {e}'
+            )
+
+        _last_search_time = (
+            time.monotonic()
+        )
+
+
+    results = []
+
+
+    for item in data:
+
+        results.append({
+            'name':
+                item.get(
+                    'display_name',
+                    q
+                ),
+
+            'lat':
+                float(
+                    item['lat']
+                ),
+
+            'lon':
+                float(
+                    item['lon']
+                ),
+        })
+
+
+    return {
+        'query': q,
+        'results': results,
+    }
 
 @app.post('/api/routes')
 def routes(request: RouteRequest):
